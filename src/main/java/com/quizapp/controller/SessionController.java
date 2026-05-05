@@ -34,8 +34,7 @@ public class SessionController {
         log.info("Starting new session for quiz: {}", quizId);
         
         Quiz quiz = quizService.getQuizById(quizId);
-        Session session = sessionService.startSession(quizId);
-        session.setQuiz(quiz);
+        Session session = sessionService.startSession(quiz);
         
         SessionResponse response = mapToSessionResponse(session);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
