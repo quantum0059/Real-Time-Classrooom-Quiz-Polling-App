@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,4 +16,5 @@ public class QuizResponse {
     private String title;
     private String description;
     private int questionCount;
+    private List<QuestionResponse> questions;
 }
