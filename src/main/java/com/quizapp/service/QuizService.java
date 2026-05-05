@@ -37,17 +37,19 @@ public class QuizService {
         
         // Save questions
         if (request.getQuestions() != null && !request.getQuestions().isEmpty()) {
+            int order = 0;
             for (QuestionRequest questionRequest : request.getQuestions()) {
                 Question question = Question.builder()
                     .quiz(savedQuiz)
                     .text(questionRequest.getText())
                     .options(questionRequest.getOptions())
                     .correctAnswer(questionRequest.getCorrectAnswer())
-                    .questionOrder(questionRequest.getQuestionOrder())
+                    .questionOrder(questionRequest.getQuestionOrder() != null ? questionRequest.getQuestionOrder() : order)
                     .build();
                 
                 Question savedQuestion = questionService.saveQuestion(question);
                 savedQuiz.getQuestions().add(savedQuestion);
+                order++;
             }
         }
         
