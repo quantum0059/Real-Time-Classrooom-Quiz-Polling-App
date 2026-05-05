@@ -143,14 +143,50 @@ public class AnswerService {
     }
     
     public List<AnswerStatsResponse> getAllQuestionStats(Long quizId, Long sessionId) {
-        log.info("Getting stats for all questions in quiz: {}", quizId);
+        log.info("Getting stats for all questions in quiz: {} and session: {}", quizId, sessionId);
         
         List<Question> questions = questionService.getQuestionsByQuizId(quizId);
+        List<Answer> sessionAnswers = answerRepository.findByQuizAndSession(quizId, sessionId);
         
         return questions.stream()
-            .map(Question::getId)
-            .map(this::getQuestionStats)
+            .map(question -> buildQuestionStats(question, sessionAnswers))
             .collect(Collectors.toList());
+    }
+    
+    private AnswerStatsResponse buildQuestionStats(Question question, List<Answer> sessionAnswers) {
+        List<Answer> answers = sessionAnswers.stream()
+            .filter(answer -> Objects.equals(answer.getQuestion().getId(), question.getId()))
+            .toList();
+        
+        Map<Integer, Integer> answerCounts = new HashMap<>();
+        for (int i = 0; i < question.getOptions().size(); i++) {
+            answerCounts.put(i, 0);
+        }
+        
+        for (Answer answer : answers) {
+            answerCounts.merge(answer.getSelectedOption(), 1, Integer::sum);
+        }
+        
+        int totalResponses = answers.size();
+        Map<String, Double> answerPercentages = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : answerCounts.entrySet()) {
+            double percentage = totalResponses > 0 ? (entry.getValue() * 100.0) / totalResponses : 0;
+            answerPercentages.put("Option " + (char)('A' + entry.getKey()), percentage);
+        }
+        
+        long correctCount = answers.stream()
+            .filter(a -> Boolean.TRUE.equals(a.getIsCorrect()))
+            .count();
+        
+        return AnswerStatsResponse.builder()
+            .questionId(question.getId())
+            .questionText(question.getText())
+            .totalResponses(totalResponses)
+            .answerCounts(answerCounts)
+            .answerPercentages(answerPercentages)
+            .correctAnswer(question.getCorrectAnswer())
+            .correctCount(correctCount)
+            .build();
     }
     
     @Transactional(readOnly = true)

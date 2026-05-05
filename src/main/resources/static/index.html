@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Classroom Quiz</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script defer src="/app.js"></script>
+</head>
+<body>
+    <header>
+        <div class="brand">Real-Time Classroom Quiz</div>
+    </header>
+
+    <nav class="tabs">
+        <button id="instructorTab" class="tab active">Instructor</button>
+        <button id="studentTab" class="tab">Student</button>
+    </nav>
+
+    <main>
+        <section id="instructorView" class="panel active">
+            <div class="panel-grid">
+                <div class="card">
+                    <h2>Create a quiz</h2>
+                    <form id="createQuizForm">
+                        <label>Title</label>
+                        <input type="text" id="quizTitle" placeholder="Quiz title" required />
+
+                        <label>Description</label>
+                        <textarea id="quizDescription" placeholder="Add a short description"></textarea>
+
+                        <div id="questionList"></div>
+                        <button type="button" id="addQuestionButton" class="secondary">Add question</button>
+                        <button type="submit" class="primary">Create Quiz</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Available quizzes</h2>
+                    <div id="quizList"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Active session</h2>
+                <div id="sessionContext" class="session-card empty">
+                    <p>Start a session from a quiz to see live controls.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="studentView" class="panel">
+            <div class="card">
+                <h2>Join a session</h2>
+                <form id="joinSessionForm">
+                    <label>Session code</label>
+                    <input type="text" id="joinSessionCode" placeholder="Enter 6-character code" required />
+
+                    <label>Your name</label>
+                    <input type="text" id="joinStudentName" placeholder="Enter your name" required />
+
+                    <button type="submit" class="primary">Join Session</button>
+                </form>
+            </div>
+
+            <div class="card" id="studentSessionCard" style="display:none;">
+                <div class="session-meta">
+                    <div><strong>Session code:</strong> <span id="studentSessionCode"></span></div>
+                    <div><strong>Student id:</strong> <span id="studentIdValue"></span></div>
+                </div>
+                <div class="question-card">
+                    <h3 id="currentQuestionTitle">Waiting for a session...</h3>
+                    <div id="currentQuestionOptions"></div>
+                </div>
+            </div>
+
+            <div class="status-grid" id="studentLivePanels" style="display:none;">
+                <div class="card small-card">
+                    <h3>Answer Distribution</h3>
+                    <div id="answerStats"></div>
+                </div>
+                <div class="card small-card">
+                    <h3>Leaderboard</h3>
+                    <div id="leaderboard"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+</body>
+</html>

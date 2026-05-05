@@ -2,9 +2,11 @@ package com.quizapp.controller;
 
 import com.quizapp.dto.QuizRequest;
 import com.quizapp.dto.QuizResponse;
+import com.quizapp.dto.QuestionResponse;
 import com.quizapp.model.Question;
 import com.quizapp.model.Quiz;
 import com.quizapp.service.QuizService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,7 @@ public class QuizController {
     private final QuizService quizService;
     
     @PostMapping
-    public ResponseEntity<QuizResponse> createQuiz(@RequestBody QuizRequest request) {
+    public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
         log.info("Creating new quiz: {}", request.getTitle());
         Quiz quiz = quizService.createQuiz(request);
         QuizResponse response = mapToQuizResponse(quiz);
@@ -56,11 +58,20 @@ public class QuizController {
     }
     
     private QuizResponse mapToQuizResponse(Quiz quiz) {
+        List<QuestionResponse> questionResponses = quiz.getQuestions().stream()
+            .map(question -> QuestionResponse.builder()
+                .id(question.getId())
+                .text(question.getText())
+                .options(question.getOptions())
+                .build())
+            .collect(Collectors.toList());
+
         return QuizResponse.builder()
             .id(quiz.getId())
             .title(quiz.getTitle())
             .description(quiz.getDescription())
             .questionCount(quiz.getQuestions().size())
+            .questions(questionResponses)
             .build();
     }
 }

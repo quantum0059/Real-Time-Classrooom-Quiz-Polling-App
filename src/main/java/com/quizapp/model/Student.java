@@ -51,5 +51,8 @@ public class Student {
         if (studentId == null) {
             studentId = UUID.randomUUID().toString();
         }
+        if (correctAnswers == null) {
+            correctAnswers = 0;
+        }
     }
 }

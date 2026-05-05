@@ -5,6 +5,7 @@ import com.quizapp.dto.AnswerStatsResponse;
 import com.quizapp.dto.LeaderboardResponse;
 import com.quizapp.service.AnswerService;
 import com.quizapp.service.LeaderboardService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class AnswerController {
     private final LeaderboardService leaderboardService;
     
     @PostMapping
-    public ResponseEntity<Void> submitAnswer(@RequestBody AnswerRequest request) {
+    public ResponseEntity<Void> submitAnswer(@Valid @RequestBody AnswerRequest request) {
         log.info("Submitting answer for student: {}", request.getStudentId());
         answerService.submitAnswer(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();

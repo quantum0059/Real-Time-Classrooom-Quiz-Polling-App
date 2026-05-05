@@ -10,6 +10,7 @@ import com.quizapp.model.Student;
 import com.quizapp.service.QuizService;
 import com.quizapp.service.SessionService;
 import com.quizapp.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ public class SessionController {
     @GetMapping("/{code}")
     public ResponseEntity<SessionResponse> getSessionByCode(@PathVariable String code) {
         log.info("Fetching session with code: {}", code);
-        Session session = sessionService.getSessionByCode(code);
+        Session session = sessionService.getSessionByCodeWithDetails(code);
         SessionResponse response = mapToSessionResponse(session);
         return ResponseEntity.ok(response);
     }
@@ -51,7 +52,7 @@ public class SessionController {
     @PostMapping("/join/{code}")
     public ResponseEntity<StudentResponse> joinSession(
             @PathVariable String code,
-            @RequestBody JoinSessionRequest request) {
+            @Valid @RequestBody JoinSessionRequest request) {
         log.info("Student joining session: {}", code);
         
         Session session = sessionService.getSessionByCode(code);
@@ -71,7 +72,7 @@ public class SessionController {
     @GetMapping("/{code}/students")
     public ResponseEntity<List<StudentResponse>> getSessionStudents(@PathVariable String code) {
         log.info("Fetching students for session: {}", code);
-        Session session = sessionService.getSessionByCode(code);
+        Session session = sessionService.getSessionByCodeWithDetails(code);
         
         List<StudentResponse> responses = session.getStudents().stream()
             .map(this::mapToStudentResponse)

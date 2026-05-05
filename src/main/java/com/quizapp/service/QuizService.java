@@ -39,6 +39,15 @@ public class QuizService {
         if (request.getQuestions() != null && !request.getQuestions().isEmpty()) {
             int order = 0;
             for (QuestionRequest questionRequest : request.getQuestions()) {
+                    if (questionRequest.getCorrectAnswer() == null
+                    || questionRequest.getCorrectAnswer() < 0
+                    || questionRequest.getCorrectAnswer() >= questionRequest.getOptions().size()) {
+                    throw new QuizAppException(
+                        "Correct answer index is invalid for question: " + questionRequest.getText(),
+                        ErrorCode.INVALID_OPTION,
+                        400
+                    );
+                }
                 Question question = Question.builder()
                     .quiz(savedQuiz)
                     .text(questionRequest.getText())

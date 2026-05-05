@@ -1,5 +1,7 @@
 package com.quizapp.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class QuizRequest {
+    @NotBlank(message = "Quiz title is required")
     private String title;
+
     private String description;
+
+    @NotEmpty(message = "Quiz must contain at least one question")
     private List<QuestionRequest> questions;
 }

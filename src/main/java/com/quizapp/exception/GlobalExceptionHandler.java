@@ -1,10 +1,15 @@
 package com.quizapp.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,6 +35,38 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
     
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(FieldError::getDefaultMessage)
+            .collect(Collectors.joining("; "));
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode(ErrorCode.VALIDATION_ERROR.getCode())
+            .message(message)
+            .timestamp(System.currentTimeMillis())
+            .path(request.getDescription(false).replace("uri=", ""))
+            .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+        String message = ex.getConstraintViolations().stream()
+            .map(violation -> violation.getPropertyPath() + " " + violation.getMessage())
+            .collect(Collectors.joining("; "));
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode(ErrorCode.VALIDATION_ERROR.getCode())
+            .message(message)
+            .timestamp(System.currentTimeMillis())
+            .path(request.getDescription(false).replace("uri=", ""))
+            .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
