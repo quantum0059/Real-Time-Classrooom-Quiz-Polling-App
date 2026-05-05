@@ -36,7 +36,7 @@ public class Question {
     @OrderColumn(name = "option_index")
     private List<String> options = new ArrayList<>();
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer correctAnswer; // index of correct option (0-based)
     
     @Column(name = "question_order")
