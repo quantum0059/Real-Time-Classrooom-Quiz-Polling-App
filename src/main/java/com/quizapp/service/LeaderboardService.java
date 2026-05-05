@@ -2,6 +2,7 @@ package com.quizapp.service;
 
 import com.quizapp.dto.LeaderboardEntry;
 import com.quizapp.dto.LeaderboardResponse;
+import com.quizapp.model.Session;
 import com.quizapp.model.Student;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class LeaderboardService {
     public LeaderboardResponse getLeaderboard(Long sessionId) {
         log.info("Generating leaderboard for session: {}", sessionId);
         
-        // Get all students ordered by correct answers
+        Session session = sessionService.getSessionById(sessionId);
         List<Student> students = studentService.getStudentsBySessionIdOrderedByScore(sessionId);
         long participantCount = studentService.getParticipantCount(sessionId);
         
@@ -44,6 +45,7 @@ public class LeaderboardService {
         }
         
         return LeaderboardResponse.builder()
+            .sessionCode(session.getCode())
             .sessionId(sessionId)
             .totalParticipants((int) participantCount)
             .leaderboard(leaderboardEntries)
