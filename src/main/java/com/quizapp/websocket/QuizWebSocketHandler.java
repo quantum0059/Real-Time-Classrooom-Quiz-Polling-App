@@ -3,12 +3,16 @@ package com.quizapp.websocket;
 import com.quizapp.dto.AnswerRequest;
 import com.quizapp.dto.AnswerStatsResponse;
 import com.quizapp.dto.LeaderboardResponse;
+import com.quizapp.model.Session;
 import com.quizapp.service.AnswerService;
 import com.quizapp.service.LeaderboardService;
+import com.quizapp.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -18,40 +22,40 @@ public class QuizWebSocketHandler {
     
     private final AnswerService answerService;
     private final LeaderboardService leaderboardService;
+    private final SessionService sessionService;
+    private final SimpMessagingTemplate messagingTemplate;
     
     /**
      * Handle student answer submission via WebSocket
      * Message mapping: /app/answer
-     * Publishes to: /topic/session/{sessionId}
+     * Publishes updated stats and leaderboard to session topics
      */
     @MessageMapping("/answer")
-    @SendTo("/topic/session/{sessionId}")
-    public AnswerStatsResponse handleStudentAnswer(AnswerRequest request) {
-        log.info("Received answer from student: {}", request.getStudentId());
-        
-        try {
-            // Submit answer and get updated statistics
-            answerService.submitAnswer(request);
-            
-            // Return updated stats for the question
-            AnswerStatsResponse stats = answerService.getQuestionStats(request.getQuestionId());
-            log.info("Answer processed successfully");
-            return stats;
-            
-        } catch (Exception e) {
-            log.error("Error processing answer: ", e);
-            throw e;
-        }
+    public void handleStudentAnswer(@Payload AnswerRequest request) {
+        log.info("Received WebSocket answer from student: {}", request.getStudentId());
+
+        answerService.submitAnswer(request);
+        AnswerStatsResponse stats = answerService.getQuestionStats(request.getQuestionId());
+
+        Session session = sessionService.getSessionByCode(request.getSessionCode());
+        LeaderboardResponse leaderboard = leaderboardService.getLeaderboard(session.getId());
+
+        String statsDestination = "/topic/session/" + session.getId();
+        String leaderboardDestination = "/topic/leaderboard/" + session.getId();
+
+        messagingTemplate.convertAndSend(statsDestination, stats);
+        messagingTemplate.convertAndSend(leaderboardDestination, leaderboard);
+
+        log.info("Broadcasted updated session stats and leaderboard for session: {}", session.getId());
     }
     
     /**
-     * Handle leaderboard request via WebSocket
-     * Message mapping: /app/leaderboard
+     * Handle explicit leaderboard request via WebSocket
+     * Message mapping: /app/leaderboard/{sessionId}
      * Publishes to: /topic/leaderboard/{sessionId}
      */
     @MessageMapping("/leaderboard/{sessionId}")
-    @SendTo("/topic/leaderboard/{sessionId}")
-    public LeaderboardResponse getLeaderboard(Long sessionId) {
+    public LeaderboardResponse getLeaderboard(@DestinationVariable Long sessionId) {
         log.info("Leaderboard requested for session: {}", sessionId);
         return leaderboardService.getLeaderboard(sessionId);
     }
