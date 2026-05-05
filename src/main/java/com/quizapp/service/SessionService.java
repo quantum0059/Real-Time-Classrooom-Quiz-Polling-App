@@ -51,6 +51,17 @@ public class SessionService {
     }
     
     @Transactional(readOnly = true)
+    public Session getSessionByCodeWithDetails(String code) {
+        log.info("Fetching session with code and details: {}", code);
+        return sessionRepository.findByCodeWithStudents(code)
+            .orElseThrow(() -> new QuizAppException(
+                "Session not found with code: " + code,
+                ErrorCode.SESSION_NOT_FOUND,
+                404
+            ));
+    }
+    
+    @Transactional(readOnly = true)
     public Session getSessionById(Long id) {
         log.info("Fetching session with id: {}", id);
         return sessionRepository.findById(id)

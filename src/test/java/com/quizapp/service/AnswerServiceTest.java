@@ -46,6 +46,7 @@ public class AnswerServiceTest {
     
     private Long quizId;
     private Long sessionId;
+    private String sessionCode;
     private Long studentId;
     private Long questionId;
     
@@ -75,9 +76,9 @@ public class AnswerServiceTest {
         questionId = quiz.getQuestions().get(0).getId();
         
         // Create session
-        Session session = sessionService.startSession(quizId);
-        session.setQuiz(quiz);
+        Session session = sessionService.startSession(quiz);
         sessionId = session.getId();
+        sessionCode = session.getCode();
         
         // Create student
         Student student = Student.builder()
@@ -94,7 +95,7 @@ public class AnswerServiceTest {
             .studentId(studentId)
             .questionId(questionId)
             .selectedOption(1)
-            .sessionCode("") // Will be fetched from session
+            .sessionCode(sessionCode)
             .build();
         
         assertDoesNotThrow(() -> answerService.submitAnswer(request));
@@ -106,7 +107,7 @@ public class AnswerServiceTest {
             .studentId(studentId)
             .questionId(questionId)
             .selectedOption(1)
-            .sessionCode("")
+            .sessionCode(sessionCode)
             .build();
         
         // First answer should succeed
@@ -122,7 +123,7 @@ public class AnswerServiceTest {
             .studentId(studentId)
             .questionId(questionId)
             .selectedOption(0)
-            .sessionCode("")
+            .sessionCode(sessionCode)
             .build();
         
         answerService.submitAnswer(request);
