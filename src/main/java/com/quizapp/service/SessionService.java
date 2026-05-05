@@ -2,6 +2,7 @@ package com.quizapp.service;
 
 import com.quizapp.exception.ErrorCode;
 import com.quizapp.exception.QuizAppException;
+import com.quizapp.model.Quiz;
 import com.quizapp.model.Session;
 import com.quizapp.model.SessionStatus;
 import com.quizapp.repository.SessionRepository;
@@ -23,10 +24,11 @@ public class SessionService {
     private static final int CODE_LENGTH = 6;
     
     @Transactional
-    public Session startSession(Long quizId) {
-        log.info("Starting session for quiz: {}", quizId);
+    public Session startSession(Quiz quiz) {
+        log.info("Starting session for quiz: {}", quiz.getId());
         
         Session session = Session.builder()
+            .quiz(quiz)
             .code(generateUniqueSessionCode())
             .status(SessionStatus.ACTIVE)
             .currentQuestionIndex(0)
